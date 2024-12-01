@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="cXdxtMcy-hYId9dDP0AcZzKVeZo4aDjBJeHXhpixMvg" />
+    <meta name="description" content="Welcome to the Labrynth traveler. Try not to lose your mind." />
+    <meta name="author" content="Justen Q" />
+    <title>8-Bit Labrynth</title>
+    <style>
+        html, body {
+    overscroll-behavior: none; /* Prevent pull-to-refresh and scrolling */
+    touch-action: none;       /* Prevent default touch actions */
+}
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: black;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            position: relative;
+            width: 90vmin;
+            height: 90vmin;
+            background-color: black;
+        }
+        .maze-wall {
+            position: absolute;
+            background-color: maroon;
+        }
+        #player {
+            position: absolute;
+            background-color: yellow;
+            border-radius: 50%;
+        }
+        .pink-square {
+            position: absolute;
+            background-color: pink;
+        }
+        .green-dot {
+            position: absolute;
+            background-color: darkgreen;
+            border-radius: 50%;
+        }
+        .blue-dot {
+            position: absolute;
+            background-color: blue;
+            border-radius: 50%;
+        }
+        .grey-dot {
+            position: absolute;
+            background-color: grey;
+            border-radius: 50%;
+        }
+        #timer-left, #timer-right {
+            position: absolute;
+            font-size: 20px;
+            color: black;
+            padding: 10px;
+            border: 1px solid black;
+            border-radius: 5px;
+            
+        }
+        #timer-left {
+            left: 100px;
+            top: 10%;
+            transform: translateY(-50%);
+            background-color: darkgreen;
+        }
+        #timer-right {
+            right: 100px;
+            top: 10%;
+            transform: translateY(-50%);
+            background-color: blue;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+    <div id="timer-left">30:00</div>
+    <div id="timer-right">05:00</div>
+
+    <script>
+        const container = document.getElementById('game-container');
+        const timerLeft = document.getElementById('timer-left');
+        const timerRight = document.getElementById('timer-right');
+
+        const mazeWidth = 15;
+        const mazeHeight = 15;
+        let cellSize;
+        let playerSize;
+        let pinkChance = 0.0025;
+        let greenChance = 0.30;
+        let blueChance = 0.50;
+        let darkGreyChance = 0.05; // Initial 5% chance
+        let darkGreySecondChance = 0.01; // Initial 1% chance
+        let newMazeCounter = 0;
+
+        let position = { x: 1, y: 1 };
+        let maze = [];
+        let pinkSquare = null;
+        let greenDot = null;
+        let blueDot = null;
+        let darkGreyDots = [];
+        let lastMaze = null;
+        let lastExit = null;
+
+        let leftTimer = 30 * 60;
+        let rightTimer = 5 * 60;
+        let totalTimer = 0;
+
+        let leftTimerInterval;
+        let rightTimerInterval;
+        let totalTimerInterval;
+
+        function calculateDimensions() {
+            const containerSize = Math.min(container.offsetWidth, container.offsetHeight);
+            cellSize = Math.floor(containerSize / (mazeWidth * 2 + 1));
+            playerSize = Math.floor(cellSize * 0.6);
+        }
+
+        function generateFirstMaze(width, height) {
+            const maze = Array.from({ length: height * 2 + 1 }, () => Array(width * 2 + 1).fill(1));
+
+            function carvePassages(cx, cy) {
+                const directions = [
+                    [0, -1], // up
+                    [1, 0],  // right
+                    [0, 1],  // down
+                    [-1, 0], // left
+                ];
+                directions.sort(() => Math.random() - 0.5);
+
+                for (const [dx, dy] of directions) {
+                    const nx = cx + dx * 2;
+                    const ny = cy + dy * 2;
+
+                    if (nx >= 0 && ny >= 0 && nx < width * 2 + 1 && ny < height * 2 + 1 && maze[ny][nx] === 1) {
+                        maze[cy + dy][cx + dx] = 0;
+                        maze[ny][nx] = 0;
+                        carvePassages(nx, ny);
+                    }
+                }
+            }
+
+            carvePassages(1, 1);
+            maze[1][1] = 0;
+
+            const exits = getPossibleExits(width, height);
+            exits.sort(() => Math.random() - 0.5);
+            const exitCount = Math.floor(Math.random() * 5) + 1;
+            for (let i = 0; i < exitCount; i++) {
+                const { x, y } = exits[i];
+                maze[y][x] = 0;
+            }
+
+            return maze;
+        }
+
+        function getPossibleExits(width, height) {
+            const exits = [];
+            for (let x = 1; x < width * 2; x += 2) {
+                exits.push({ x, y: 0 });
+                exits.push({ x, y: height * 2 });
+            }
+            for (let y = 1; y < height * 2; y += 2) {
+                exits.push({ x: 0, y });
+                exits.push({ x: width * 2, y });
+            }
+            return exits;
+        }
+
+        function getMirroredExit(x, y) {
+            if (y < 0) return { x, y: mazeHeight * 2 }; // Exiting through the top
+            if (y > mazeHeight * 2) return { x, y: 0 }; // Exiting through the bottom
+            if (x < 0) return { x: mazeWidth * 2, y }; // Exiting through the left
+            if (x > mazeWidth * 2) return { x: 0, y }; // Exiting through the right
+            return null; // No valid exit
+        }
+
+        function deepCopyMaze(maze) {
+            return maze.map(row => row.slice());
+        }
+
+        function findShortestPath(start, target) {
+            const directions = [
+                { dx: 0, dy: -1 }, // up
+                { dx: 1, dy: 0 },  // right
+                { dx: 0, dy: 1 },  // down
+                { dx: -1, dy: 0 }, // left
+            ];
+            const visited = new Set();
+            const queue = [[start]];
+
+            while (queue.length > 0) {
+                const path = queue.shift();
+                const { x, y } = path[path.length - 1];
+
+                if (x === target.x && y === target.y) return path;
+
+                for (const { dx, dy } of directions) {
+                    const nx = x + dx;
+                    const ny = y + dy;
+
+                    if (
+                        nx >= 0 &&
+                        ny >= 0 &&
+                        nx < maze[0].length &&
+                        ny < maze.length &&
+                        maze[ny][nx] !== 1 &&
+                        !visited.has(`${nx},${ny}`)
+                    ) {
+                        visited.add(`${nx},${ny}`);
+                        queue.push([...path, { x: nx, y: ny }]);
+                    }
+                }
+            }
+
+            return null; // No path found
+        }
+
+        function moveDarkGreyDots() {
+            const playerPos = { x: position.x, y: position.y };
+            const newDotPositions = [];
+
+            for (const dot of darkGreyDots) {
+                const path = findShortestPath(dot, playerPos);
+                if (path && path.length > 1) {
+                    // Move 1.5 steps: move 2 cells if available; otherwise, move 1
+                    const steps = path.length > 2 ? 2 : 1;
+                    const newPos = path[steps];
+                    newDotPositions.push(newPos);
+
+                    // Check if the new position collides with the player
+                    if (newPos.x === playerPos.x && newPos.y === playerPos.y) {
+                        
+                        handleDeath();
+                        return;
+                    }
+                } else {
+                    newDotPositions.push(dot); // No movement if no path
+                }
+            }
+
+            darkGreyDots = newDotPositions;
+            drawMaze(); // Redraw maze to reflect new positions
+        }
+
+        function placeSpecialDots() {
+            const pathCells = [];
+            darkGreyDots = [];
+            for (let y = 0; y < maze.length; y++) {
+                for (let x = 0; x < maze[y].length; x++) {
+                    if (maze[y][x] === 0 && !(x === position.x && y === position.y)) {
+                        pathCells.push({ x, y });
+                    }
+                }
+            }
+
+            if (Math.random() < pinkChance && pathCells.length > 0) {
+                pinkSquare = pathCells.splice(Math.floor(Math.random() * pathCells.length), 1)[0];
+                maze[pinkSquare.y][pinkSquare.x] = 2;
+            }
+
+            if (Math.random() < greenChance && pathCells.length > 0) {
+                greenDot = pathCells.splice(Math.floor(Math.random() * pathCells.length), 1)[0];
+                maze[greenDot.y][greenDot.x] = 3;
+            }
+
+            if (Math.random() < blueChance && pathCells.length > 0) {
+                blueDot = pathCells.splice(Math.floor(Math.random() * pathCells.length), 1)[0];
+                maze[blueDot.y][blueDot.x] = 4;
+            }
+
+            if (Math.random() < darkGreyChance && pathCells.length > 0) {
+                const darkGreyDot1 = pathCells.splice(Math.floor(Math.random() * pathCells.length), 1)[0];
+                maze[darkGreyDot1.y][darkGreyDot1.x] = 5; // Add dark grey dot
+                darkGreyDots.push(darkGreyDot1);
+
+                if (Math.random() < darkGreySecondChance && pathCells.length > 0) {
+                    const darkGreyDot2 = pathCells.splice(Math.floor(Math.random() * pathCells.length), 1)[0];
+                    maze[darkGreyDot2.y][darkGreyDot2.x] = 5; // Add second dark grey dot
+                    darkGreyDots.push(darkGreyDot2);
+                }
+            }
+
+            darkGreyChance += 0.005; // Increment spawn chance
+            darkGreySecondChance += 0.005; // Increment secondary spawn chance
+        }
+
+        function drawMaze() {
+            
+            container.innerHTML = '';
+            for (let y = 0; y < maze.length; y++) {
+                for (let x = 0; x < maze[y].length; x++) {
+                    if (maze[y][x] === 1) {
+                        const wall = document.createElement('div');
+                        wall.className = 'maze-wall';
+                        wall.style.width = `${cellSize}px`;
+                        wall.style.height = `${cellSize}px`;
+                        wall.style.left = `${x * cellSize}px`;
+                        wall.style.top = `${y * cellSize}px`;
+                        container.appendChild(wall);
+                    } else if (maze[y][x] === 2) {
+                        const pink = document.createElement('div');
+                        pink.className = 'pink-square';
+                        pink.style.width = `${cellSize}px`;
+                        pink.style.height = `${cellSize}px`;
+                        pink.style.left = `${x * cellSize}px`;
+                        pink.style.top = `${y * cellSize}px`;
+                        container.appendChild(pink);
+                    } else if (maze[y][x] === 3) {
+                        const green = document.createElement('div');
+                        green.className = 'green-dot';
+                        green.style.width = `${cellSize * 0.6}px`;
+                        green.style.height = `${cellSize * 0.6}px`;
+                        green.style.left = `${x * cellSize + (cellSize - cellSize * 0.6) / 2}px`;
+                        green.style.top = `${y * cellSize + (cellSize - cellSize * 0.6) / 2}px`;
+                        container.appendChild(green);
+                    } else if (maze[y][x] === 4) {
+                        const blue = document.createElement('div');
+                        blue.className = 'blue-dot';
+                        blue.style.width = `${cellSize * 0.6}px`;
+                        blue.style.height = `${cellSize * 0.6}px`;
+                        blue.style.left = `${x * cellSize + (cellSize - cellSize * 0.6) / 2}px`;
+                        blue.style.top = `${y * cellSize + (cellSize - cellSize * 0.6) / 2}px`;
+                        container.appendChild(blue);
+                    }
+                }
+            }
+
+            for (const dot of darkGreyDots) {
+                const grey = document.createElement('div');
+                grey.className = 'grey-dot';
+                grey.style.width = `${cellSize * 0.6}px`;
+                grey.style.height = `${cellSize * 0.6}px`;
+                grey.style.left = `${dot.x * cellSize + (cellSize - cellSize * 0.6) / 2}px`;
+                grey.style.top = `${dot.y * cellSize + (cellSize - cellSize * 0.6) / 2}px`;
+                container.appendChild(grey);
+            }
+
+            const player = document.createElement('div');
+            player.id = 'player';
+            player.style.width = `${playerSize}px`;
+            player.style.height = `${playerSize}px`;
+            player.style.transform = `translate(${position.x * cellSize + (cellSize - playerSize) / 2}px, ${position.y * cellSize + (cellSize - playerSize) / 2}px)`;
+            container.appendChild(player);
+        }
+
+        function movePlayer(dx, dy) {
+            const newX = position.x + dx;
+            const newY = position.y + dy;
+
+            if (newX < 0 || newY < 0 || newX >= maze[0].length || newY >= maze.length) {
+                const exit = getMirroredExit(newX, newY);
+
+                if (!exit) {
+                    console.error("Error: Unable to determine mirrored exit.");
+                    return;
+                }
+
+               const tempCurrentMaze = {
+    layout: deepCopyMaze(maze), // Save the current maze layout
+    exit: { ...position },      // Save the player's current position as the exit
+    darkGreyDots: [...darkGreyDots], // Save the current positions of followers
+};
+
+                if (lastMaze && exit.x === lastMaze.exit.x && exit.y === lastMaze.exit.y) {
+                    darkGreyDots = [];
+                    maze = deepCopyMaze(lastMaze.layout);
+                    position = { ...lastMaze.exit };
+                    lastExit = { ...lastMaze.exit };
+                    darkGreyDots = [...lastMaze.darkGreyDots]; // Restore followers
+                    lastMaze = tempCurrentMaze;
+                    
+                } else {
+                    lastMaze = tempCurrentMaze;
+                    lastExit = exit;
+                    createMaze(false);
+                }
+
+                drawMaze();
+                return;
+            }
+
+            if (maze[newY][newX] === 0 || maze[newY][newX] === 2 || maze[newY][newX] === 3 || maze[newY][newX] === 4 || maze[newY][newX] === 5) {
+                position.x = newX;
+                position.y = newY;
+
+                if (maze[newY][newX] === 2) {
+                    alert(`You escaped! Total time: ${Math.floor(totalTimer / 60)} minutes and ${totalTimer % 60} seconds.`);
+                    resetGame();
+                } else if (maze[newY][newX] === 3) {
+                    
+                    leftTimer = 30 * 60;
+                    updateTimerDisplay(timerLeft, leftTimer);
+                    greenDot = null;
+                    maze[newY][newX] = 0;
+
+                    const greenElement = document.querySelector('.green-dot');
+                    if (greenElement) greenElement.remove();
+                } else if (maze[newY][newX] === 4) {
+                    
+                    rightTimer = 5 * 60;
+                    updateTimerDisplay(timerRight, rightTimer);
+                    blueDot = null;
+                    maze[newY][newX] = 0;
+
+                    const blueElement = document.querySelector('.blue-dot');
+                    if (blueElement) blueElement.remove();
+                } else if (maze[newY][newX] === 5) {
+                    
+                    handleDeath();
+                    return;
+                }
+
+                const player = document.getElementById('player');
+                if (player) {
+                    player.style.transform = `translate(${position.x * cellSize + (cellSize - playerSize) / 2}px, ${position.y * cellSize + (cellSize - playerSize) / 2}px)`;
+                }
+
+                // Move dark grey dots
+                moveDarkGreyDots();
+            }
+        }
+
+        function handleDeath() {
+            clearInterval(leftTimerInterval);
+            clearInterval(rightTimerInterval);
+            clearInterval(totalTimerInterval);
+            alert(`You died! Total time: ${Math.floor(totalTimer / 60)} minutes and ${totalTimer % 60} seconds.`);
+            resetGame();
+        }
+
+        function resetGame() {
+    leftTimer = 30 * 60;
+    rightTimer = 5 * 60;
+    totalTimer = 0;
+
+    // Reset chances for special dots
+    pinkChance = 0.0025;
+    greenChance = 0.30;
+    blueChance = 0.47;
+    darkGreyChance = 0.05;
+    darkGreySecondChance = 0.01;
+
+    // Clear dark grey dots
+    darkGreyDots = [];
+
+    newMazeCounter = 0;
+    createMaze(true);
+    startTimers();
+}
+
+        function startTimers() {
+            clearInterval(leftTimerInterval);
+            clearInterval(rightTimerInterval);
+            clearInterval(totalTimerInterval);
+
+            leftTimerInterval = setInterval(() => {
+                leftTimer--;
+                updateTimerDisplay(timerLeft, leftTimer);
+
+                if (leftTimer <= 0) {
+                    handleDeath();
+                }
+            }, 1000);
+
+            rightTimerInterval = setInterval(() => {
+                rightTimer--;
+                updateTimerDisplay(timerRight, rightTimer);
+
+                if (rightTimer <= 0) {
+                    handleDeath();
+                }
+            }, 1000);
+
+            totalTimerInterval = setInterval(() => {
+                totalTimer++;
+            }, 1000);
+        }
+
+        function updateTimerDisplay(timerElement, time) {
+            const minutes = Math.floor(time / 60).toString().padStart(2, '0');
+            const seconds = (time % 60).toString().padStart(2, '0');
+            timerElement.textContent = `${minutes}:${seconds}`;
+        }
+
+        function createMaze(isFirstMaze = false) {
+            container.innerHTML = '';
+            calculateDimensions();
+
+            if (isFirstMaze) {
+                maze = generateFirstMaze(mazeWidth, mazeHeight);
+                position = { x: Math.floor(mazeWidth), y: Math.floor(mazeHeight) };
+            } else {
+                if (!lastExit) {
+                    console.error("Error: Missing exit information!");
+                    return;
+                }
+
+                maze = generateFirstMaze(mazeWidth, mazeHeight);
+                position = { ...lastExit };
+                maze[position.y][position.x] = 0;
+                pinkChance += 0.0005;
+                greenChance = Math.max(0, greenChance - 0.0025);
+                blueChance = Math.max(0, blueChance - 0.0015);
+            }
+
+            placeSpecialDots();
+            drawMaze();
+        }
+
+        document.addEventListener('keydown', (event) => {
+            let dx = 0, dy = 0;
+            switch (event.key) {
+                case 'ArrowUp': dy = -1; break;
+                case 'ArrowDown': dy = 1; break;
+                case 'ArrowLeft': dx = -1; break;
+                case 'ArrowRight': dx = 1; break;
+            }
+            movePlayer(dx, dy);
+        });
+
+let touchStartX = 0;
+let touchStartY = 0;
+
+function handleTouchStart(event) {
+    const touch = event.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+}
+
+function handleTouchMove(event) {
+    // Prevent default scrolling behavior
+    event.preventDefault();
+}
+
+function handleTouchEnd(event) {
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - touchStartX;
+    const deltaY = touch.clientY - touchStartY;
+
+    const absDeltaX = Math.abs(deltaX);
+    const absDeltaY = Math.abs(deltaY);
+
+    // Determine the direction of the swipe
+    if (absDeltaX > absDeltaY) {
+        if (deltaX > 30) {
+            // Swipe Right
+            movePlayer(1, 0); // Simulates right arrow key
+        } else if (deltaX < -30) {
+            // Swipe Left
+            movePlayer(-1, 0); // Simulates left arrow key
+        }
+    } else {
+        if (deltaY > 30) {
+            // Swipe Down
+            movePlayer(0, 1); // Simulates down arrow key
+        } else if (deltaY < -30) {
+            // Swipe Up
+            movePlayer(0, -1); // Simulates up arrow key
+        }
+    }
+}
+
+// Attach event listeners to the game container
+const gameContainer = document.getElementById('game-container');
+gameContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+gameContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+gameContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+        createMaze(true);
+        startTimers();
+    </script>
+</body>
+</html>
