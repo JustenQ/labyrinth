@@ -58,6 +58,8 @@ Beneath even the Void lies the True Void, the foundation of all creation. It is 
 
 Tears: The Wounds in Reality
 
+![Picsart_24-12-05_15-41-19-923](https://github.com/user-attachments/assets/d44ebb37-c777-4ab9-a0e5-748911e4ef90)
+
 Tears are random, chaotic ruptures that connect the realms. They hum with an eerie pulse, distinct from the ambient melody of the maze. These anomalies:
 
 Pull the unlucky from reality into the Labyrinth, their paths determined by no logic or purpose.
@@ -73,7 +75,10 @@ Tears do not choose. They are scars in the fabric of existence, unfeeling and in
 
 The Inhabitants of the Depths
 
+
 Followers (Predators of the SubLabyrinth)
+
+![converted_image](https://github.com/user-attachments/assets/d4938699-5b06-4672-b34d-f156401020e5)
 
 Followers are primal hunters born of the SubLabyrinth. They:
 
@@ -83,10 +88,10 @@ Avoid the Void, fearing its darkness, but those that wander there are rare and u
 
 Are the embodiment of pure predation, driven by an instinct so primal it defies understanding. They need nothing to survive yet are driven by an eternal hunger, one which can never be satisfied.
 
-![converted_image](https://github.com/user-attachments/assets/d4938699-5b06-4672-b34d-f156401020e5)
-
 
 Wanderers (Echoes of the Void)
+
+![converted_image (1)](https://github.com/user-attachments/assets/78654824-0b85-4ddc-9791-b1a32c9ebd82)
 
 Wanderers are creatures of the Void, blind and deaf yet guided by vibrations that ripple through their world. They:
 
@@ -95,8 +100,6 @@ Move with an eerie, aimless precision, indifferent to your existence.
 Do not seek you, yet their mere presence is enough to unravel you.
 
 Mirror the disinterest of the Void itself, a force that destroys without malice or intent.
-
-![converted_image (1)](https://github.com/user-attachments/assets/78654824-0b85-4ddc-9791-b1a32c9ebd82)
 
 
 ---
