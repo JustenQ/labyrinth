@@ -332,3 +332,9 @@ TrueVoid()
 resetGame()
 
 allow pasting
+
+![converted_image](https://github.com/user-attachments/assets/d4938699-5b06-4672-b34d-f156401020e5)
+
+![converted_image (1)](https://github.com/user-attachments/assets/78654824-0b85-4ddc-9791-b1a32c9ebd82)
+
+![converted_image (2)](https://github.com/user-attachments/assets/8f18754d-487d-4bec-9535-489c60c815ac)
