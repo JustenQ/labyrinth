@@ -4,6 +4,8 @@ You have stumbled into a place that was never meant to be seen, a truth older th
 
 The Structure of the Labyrinth
 
+![converted_image (2)](https://github.com/user-attachments/assets/8f18754d-487d-4bec-9535-489c60c815ac)
+
 The Labyrinth is not a single place but a cascading series of realms, descending into the most fundamental essence of existence. Each level strips away layers of form, light, and reason, exposing truths that defy human comprehension.
 
 Reality (The Surface)
@@ -81,6 +83,8 @@ Avoid the Void, fearing its darkness, but those that wander there are rare and u
 
 Are the embodiment of pure predation, driven by an instinct so primal it defies understanding. They need nothing to survive yet are driven by an eternal hunger, one which can never be satisfied.
 
+![converted_image](https://github.com/user-attachments/assets/d4938699-5b06-4672-b34d-f156401020e5)
+
 
 Wanderers (Echoes of the Void)
 
@@ -91,6 +95,8 @@ Move with an eerie, aimless precision, indifferent to your existence.
 Do not seek you, yet their mere presence is enough to unravel you.
 
 Mirror the disinterest of the Void itself, a force that destroys without malice or intent.
+
+![converted_image (1)](https://github.com/user-attachments/assets/78654824-0b85-4ddc-9791-b1a32c9ebd82)
 
 
 ---
@@ -332,9 +338,3 @@ TrueVoid()
 resetGame()
 
 allow pasting
-
-![converted_image](https://github.com/user-attachments/assets/d4938699-5b06-4672-b34d-f156401020e5)
-
-![converted_image (1)](https://github.com/user-attachments/assets/78654824-0b85-4ddc-9791-b1a32c9ebd82)
-
-![converted_image (2)](https://github.com/user-attachments/assets/8f18754d-487d-4bec-9535-489c60c815ac)
