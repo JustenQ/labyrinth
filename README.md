@@ -35,7 +35,7 @@ Beneath the upper Labyrinth lies the SubLabyrinth, a place of oppressive heat an
 
 Followers dominate these depths, embodiments of pure, primal hunger. They hunt by sound, faster than you and relentless in their pursuit.
 
-Blue dots are rare here and green dots are non-existent, and the tears that appear are as likely to drag you further into the depths as they are to lead you out.
+Blue dots are rare here and green dots are almost non-existent, and the tears that appear are as likely to drag you further into the depths as they are to lead you out.
 
 Every moment in the SubLabyrinth is borrowed time.
 
@@ -84,9 +84,9 @@ Followers are primal hunters born of the SubLabyrinth. They:
 
 Are faster than you and relentless, tracking you by the sound of your footsteps.
 
-Avoid the Void, fearing its darkness, but those that wander there are rare and unnaturally dangerous.
+Avoid the Void, fearing its darkness and inhabitants, but those that wander there are rare and unnaturally dangerous.
 
-Are the embodiment of pure predation, driven by an instinct so primal it defies understanding. They need nothing to survive yet are driven by an eternal hunger, one which can never be satisfied.
+Are the embodiment of pure predation, driven by an instinct so primal it defies understanding. They need nothing to survive yet are fueled by an eternal hunger, one which can never be satiated.
 
 
 Wanderers (Echoes of the Void)
@@ -99,7 +99,7 @@ Move with an eerie, aimless precision, indifferent to your existence.
 
 Do not seek you, yet their mere presence is enough to unravel you.
 
-Mirror the disinterest of the Void itself, a force that destroys without malice or intent.
+Mirror the entropic nature of the Void itself, a force that destroys indiscriminately without malice or intent.
 
 
 ---
@@ -248,6 +248,8 @@ showCustomAlert("Title", "message")
 
 showCustomAlert("Title", "message", "dark-green-alert")
 
+Math.random()
+
 pinkChance = n
 
 greySquareChance = n
@@ -259,6 +261,8 @@ blueChance = n
 darkGreyChance = n
 
 purpleDotChance = n
+
+randomSpawnChance = n
 
 populate()
 
@@ -276,9 +280,9 @@ freezeEnemies()
 
 unfreezeEnemies()
 
-position
-
 showGrid(true)
+
+position
 
 teleport(x, y)
 
