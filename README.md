@@ -308,9 +308,13 @@ placePurpleDot(x, y)
 
 color("color/#hex")
 
+embraceTheVoid()
+
 visible(false)
 
-embraceTheVoid()
+freeWill(true)
+
+vulnerability = false
 
 saveMaze("name")
 
@@ -325,8 +329,6 @@ listMazes()
 clearSavedMazes()
 
 previousMaze()
-
-vulnerability = false
 
 handleDeath()
 
